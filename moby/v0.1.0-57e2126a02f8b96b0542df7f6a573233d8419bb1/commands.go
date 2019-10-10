@@ -880,6 +880,8 @@ func (srv *Server) CmdRun(stdin io.ReadCloser, stdout io.Writer, args ...string)
 	return nil
 }
 
+// @anxk: NewServer首先实例化Runtime，然后实例化Server并返回对应的server。注意，当前
+// v0.1.0只支持amd64 cpu架构。
 func NewServer() (*Server, error) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	if runtime.GOARCH != "amd64" {

@@ -2,14 +2,16 @@ package main
 
 import (
 	"flag"
-	"github.com/dotcloud/docker"
-	"github.com/dotcloud/docker/rcli"
-	"github.com/dotcloud/docker/term"
 	"io"
 	"log"
 	"os"
+
+	"github.com/dotcloud/docker"
+	"github.com/dotcloud/docker/rcli"
+	"github.com/dotcloud/docker/term"
 )
 
+// @anxk: docker的main函数，根据参数选择运行daeman或者client。
 func main() {
 	if docker.SelfPath() == "/sbin/init" {
 		// Running in init mode
@@ -36,6 +38,8 @@ func main() {
 	}
 }
 
+// @anxk: 启动Daemon，包括实例化Server（包括Runtime的实例化），将server绑定到本地环回
+// 地址，监听tcp/4242端口并准备接受来自Client的请求。
 func daemon() error {
 	service, err := docker.NewServer()
 	if err != nil {
@@ -44,6 +48,7 @@ func daemon() error {
 	return rcli.ListenAndServe("tcp", "127.0.0.1:4242", service)
 }
 
+// @anxk: runCommand是客户端，负责向Server发送请求。
 func runCommand(args []string) error {
 	var oldState *term.State
 	var err error
