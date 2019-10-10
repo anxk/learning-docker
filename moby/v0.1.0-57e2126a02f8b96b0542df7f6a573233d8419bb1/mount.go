@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// @anxk: unmount一个挂载点，并删除挂载点。
 func Unmount(target string) error {
 	if err := syscall.Unmount(target, 0); err != nil {
 		return err
@@ -30,6 +31,7 @@ func Unmount(target string) error {
 	return fmt.Errorf("Umount: Failed to umount %v", target)
 }
 
+// @anxk: 检测某一路径是否是一个挂载点。
 func Mounted(mountpoint string) (bool, error) {
 	mntpoint, err := os.Stat(mountpoint)
 	if err != nil {

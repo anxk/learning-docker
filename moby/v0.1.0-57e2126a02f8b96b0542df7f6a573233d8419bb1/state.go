@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// @anxk: State表示容器的状态。
 type State struct {
 	Running   bool
 	Pid       int
@@ -16,6 +17,7 @@ type State struct {
 	stateChangeCond *sync.Cond
 }
 
+// @anxk: 实现Stringer接口。
 // String returns a human-readable description of the state
 func (s *State) String() string {
 	if s.Running {
@@ -24,6 +26,7 @@ func (s *State) String() string {
 	return fmt.Sprintf("Exit %d", s.ExitCode)
 }
 
+// @anxk: 设置为运行状态。
 func (s *State) setRunning(pid int) {
 	s.Running = true
 	s.ExitCode = 0
@@ -32,6 +35,7 @@ func (s *State) setRunning(pid int) {
 	s.broadcast()
 }
 
+// @axnk: 设置为停止状态。
 func (s *State) setStopped(exitCode int) {
 	s.Running = false
 	s.Pid = 0

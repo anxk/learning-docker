@@ -5,7 +5,6 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
-	"github.com/dotcloud/docker/rcli"
 	"io"
 	"log"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/dotcloud/docker/rcli"
 )
 
 // Go is a basic promise implementation: it wraps calls a function in a goroutine,
@@ -118,6 +119,7 @@ func Trunc(s string, maxlen int) string {
 	return s[:maxlen]
 }
 
+// @anxk: 获取docker二进制程序的路径。
 // Figure out the absolute path of our own binary
 func SelfPath() string {
 	path, err := exec.LookPath(os.Args[0])

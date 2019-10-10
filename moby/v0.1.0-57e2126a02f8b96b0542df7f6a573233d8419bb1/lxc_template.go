@@ -4,6 +4,7 @@ import (
 	"text/template"
 )
 
+// @anxk: v0.1.0版本docker是基于lxc，模本基于某一容器json渲染后作为lxc的配置文件。
 const LxcTemplate = `
 # hostname
 {{if .Config.Hostname}}
@@ -105,6 +106,7 @@ func getMemorySwap(config *Config) int64 {
 	return config.Memory * 2
 }
 
+// @anxk: 在main函数执行前对lxc模板文件进行编译。
 func init() {
 	var err error
 	funcMap := template.FuncMap{

@@ -3,7 +3,6 @@ package docker
 import (
 	"container/list"
 	"fmt"
-	"github.com/dotcloud/docker/auth"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,8 +10,16 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/dotcloud/docker/auth"
 )
 
+// @anxk: 运行时是docker服务的主体，包括了镜像存储后端、容器存储、镜像仓库和标签存储、认证信息、网络和容器列表。
+// root是运行时的根路径，即/var/lib/docker。
+// repository是容器的根路径，即/var/lib/docker/containers，其中每个文件夹的路径形式是
+// ./<容器ID>，他们是对于容器的根目录（挂载点）。
+// graph是镜像的存储后端，即/var/lib/docker/graph。
+// repositories是镜像标签和仓库的存储路径，即/var/lib/docker/repositories。
 type Runtime struct {
 	root           string
 	repository     string
@@ -23,12 +30,15 @@ type Runtime struct {
 	authConfig     *auth.AuthConfig
 }
 
+// @anxk: sysInitPath是docker二进制的路径。
 var sysInitPath string
 
+// @anxk: 在main函数之前初始化docker二进制的路径。
 func init() {
 	sysInitPath = SelfPath()
 }
 
+// @anxk: 生成运行时中注册的容器列表。
 func (runtime *Runtime) List() []*Container {
 	containers := new(History)
 	for e := runtime.containers.Front(); e != nil; e = e.Next() {
@@ -37,6 +47,7 @@ func (runtime *Runtime) List() []*Container {
 	return *containers
 }
 
+// @anxk: 根据容器ID获取指定容器。
 func (runtime *Runtime) getContainerElement(id string) *list.Element {
 	for e := runtime.containers.Front(); e != nil; e = e.Next() {
 		container := e.Value.(*Container)
@@ -47,6 +58,7 @@ func (runtime *Runtime) getContainerElement(id string) *list.Element {
 	return nil
 }
 
+// @anxk: 根据容器ID获取指定容器。
 func (runtime *Runtime) Get(id string) *Container {
 	e := runtime.getContainerElement(id)
 	if e == nil {
@@ -55,14 +67,17 @@ func (runtime *Runtime) Get(id string) *Container {
 	return e.Value.(*Container)
 }
 
+// @anxk: 检测指定容器ID的容器是否存在。
 func (runtime *Runtime) Exists(id string) bool {
 	return runtime.Get(id) != nil
 }
 
+// @anxk: 某一容器的根目录（挂载点），即/var/lib/docker/containers/<容器ID>
 func (runtime *Runtime) containerRoot(id string) string {
 	return path.Join(runtime.repository, id)
 }
 
+// @anxk: 创建一个新的容器，包括存储容器json和注册到运行时。
 func (runtime *Runtime) Create(config *Config) (*Container, error) {
 	// Lookup image
 	img, err := runtime.repositories.LookupImage(config.Image)
@@ -98,6 +113,7 @@ func (runtime *Runtime) Create(config *Config) (*Container, error) {
 	return container, nil
 }
 
+// @anxk: 从本地加载一个容器并注册到运行时。
 func (runtime *Runtime) Load(id string) (*Container, error) {
 	container := &Container{root: runtime.containerRoot(id)}
 	if err := container.FromDisk(); err != nil {
@@ -223,10 +239,12 @@ func (runtime *Runtime) restore() error {
 	return nil
 }
 
+// @anxk: 创建一个运行时。
 func NewRuntime() (*Runtime, error) {
 	return NewRuntimeFromDirectory("/var/lib/docker")
 }
 
+// @anxk: 基于本地创建一个运行时。
 func NewRuntimeFromDirectory(root string) (*Runtime, error) {
 	runtime_repo := path.Join(root, "containers")
 
@@ -268,6 +286,8 @@ func NewRuntimeFromDirectory(root string) (*Runtime, error) {
 	return runtime, nil
 }
 
+// @anxk: History是一个容器列表，表示本地启动过的容器。其实现了sort.Interface的方法Len、
+// Less、Swap，以便对其根据启动时间进行排序。
 type History []*Container
 
 func (history *History) Len() int {
@@ -286,6 +306,7 @@ func (history *History) Swap(i, j int) {
 	containers[j] = tmp
 }
 
+// @anxk: 向history中添加一个新的容器，并排序。
 func (history *History) Add(container *Container) {
 	*history = append(*history, container)
 	sort.Sort(history)

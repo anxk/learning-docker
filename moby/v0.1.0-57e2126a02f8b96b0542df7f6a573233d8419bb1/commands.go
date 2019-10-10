@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dotcloud/docker/auth"
-	"github.com/dotcloud/docker/rcli"
 	"io"
 	"log"
 	"math/rand"
@@ -18,6 +16,9 @@ import (
 	"sync"
 	"text/tabwriter"
 	"time"
+
+	"github.com/dotcloud/docker/auth"
+	"github.com/dotcloud/docker/rcli"
 )
 
 const VERSION = "0.1.0"
@@ -894,6 +895,8 @@ func NewServer() (*Server, error) {
 	return srv, nil
 }
 
+// @anxk: Server，其作用有（1）监听http或tcp端口，接受来自Client的请求；（2）通过go语
+// 言的反射实现路由到指定的handler函数上；（3）与Runtime交互。
 type Server struct {
 	runtime *Runtime
 }
