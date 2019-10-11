@@ -17,6 +17,8 @@ import (
 	"github.com/dotcloud/docker/rcli"
 )
 
+// @anxk: 新开一个go程执行指定函数（该函数应该返回error类型），返回一个通道用于接收实际
+// 执行函数的error类型返回值。
 // Go is a basic promise implementation: it wraps calls a function in a goroutine,
 // and returns a channel which will later return the function's return value.
 func Go(f func() error) chan error {
@@ -27,6 +29,7 @@ func Go(f func() error) chan error {
 	return ch
 }
 
+// @anxk: 请求url，返回*http.Response，其中对http返回码大于400的情况进行了处理。
 // Request a given URL and return an io.Reader
 func Download(url string, stderr io.Writer) (*http.Response, error) {
 	var resp *http.Response
@@ -40,6 +43,8 @@ func Download(url string, stderr io.Writer) (*http.Response, error) {
 	return resp, nil
 }
 
+// @anxk: debug模式的log输出，如果DEBUG_FALG=true才会输出log信息，如果docker处于daemon
+// 模式，并且CLIENT_SOCKET != nil，也会向该socket发送log信息。
 // Debug function, if the debug flag is set, then display. Do nothing otherwise
 // If Docker is in damon mode, also send the debug info on the socket
 func Debugf(format string, a ...interface{}) {
@@ -51,6 +56,7 @@ func Debugf(format string, a ...interface{}) {
 	}
 }
 
+// @anxk: 带进度条的Reader。
 // Reader with progress bar
 type progressReader struct {
 	reader        io.ReadCloser // Stream to read from
@@ -80,9 +86,12 @@ func (r *progressReader) Read(p []byte) (n int, err error) {
 
 	return read, err
 }
+
 func (r *progressReader) Close() error {
 	return io.ReadCloser(r.reader).Close()
 }
+
+// @anxk: 实例化一个ProcessReader。
 func ProgressReader(r io.ReadCloser, size int, output io.Writer) *progressReader {
 	return &progressReader{r, output, size, 0, 0}
 }
@@ -112,6 +121,7 @@ func HumanDuration(d time.Duration) string {
 	return fmt.Sprintf("%d years", d.Hours()/24/365)
 }
 
+// @anxk: 截断字符串到指定长度。
 func Trunc(s string, maxlen int) string {
 	if len(s) <= maxlen {
 		return s
@@ -133,6 +143,7 @@ func SelfPath() string {
 	return path
 }
 
+// @anxk: 定义了一个类似于io/ioutil的func NopCloser(r io.Reader) io.ReadCloser。
 type nopWriteCloser struct {
 	io.Writer
 }
@@ -151,6 +162,7 @@ type bufReader struct {
 	wait   sync.Cond
 }
 
+// @anxk: 带buffer的Reader。
 func newBufReader(r io.Reader) *bufReader {
 	reader := &bufReader{
 		buf:    &bytes.Buffer{},
@@ -203,6 +215,7 @@ func (r *bufReader) Close() error {
 	return closer.Close()
 }
 
+// @anxk: 实现一个组Writer。
 type writeBroadcaster struct {
 	writers *list.List
 }
