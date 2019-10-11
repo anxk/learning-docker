@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// @anxk: State表示容器的状态。
+// @anxk: State表示容器的当前状态。
 type State struct {
 	Running   bool
 	Pid       int
@@ -17,7 +17,6 @@ type State struct {
 	stateChangeCond *sync.Cond
 }
 
-// @anxk: 实现Stringer接口。
 // String returns a human-readable description of the state
 func (s *State) String() string {
 	if s.Running {

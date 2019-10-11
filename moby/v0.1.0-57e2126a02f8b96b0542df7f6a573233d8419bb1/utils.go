@@ -119,7 +119,7 @@ func Trunc(s string, maxlen int) string {
 	return s[:maxlen]
 }
 
-// @anxk: 获取docker二进制程序的路径。
+// @anxk: 获取当前进程的程序名（路径）。
 // Figure out the absolute path of our own binary
 func SelfPath() string {
 	path, err := exec.LookPath(os.Args[0])
