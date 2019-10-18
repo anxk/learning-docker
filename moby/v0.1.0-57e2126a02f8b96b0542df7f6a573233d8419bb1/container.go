@@ -145,7 +145,49 @@ func (container *Container) generateLXCConfig() error {
 	return nil
 }
 
-// @anxk: 设置容器的pty配置，然后启动容器内的主进程。
+// @anxk: 设置容器的pty配置，然后启动容器内的进程。
+/*
+-------------       ---------
+| Container |       |  cmd  |
++++++++++++++       +++++++++
+|  stdin    | <-->  | stdin |
+|  stdout   | <-->  | stdout|
+|  stderr   | <-->  | stderr|
+-------------       ---------
+*/
+/*
+如果main函数不退出，则即使其中调用的函数start()退出，start中启动的go程也会继续执行直到main函数退出。
+package main
+
+import(
+	"fmt"
+	"time"
+)
+
+func main(){
+	start()
+	time.Sleep(time.Second * 11)
+}
+
+func start() {
+	fmt.Println("start")
+	go echo("hello")
+	fmt.Println("start exit")
+}
+
+func echo(str string) {
+	fmt.Println("echo start")
+	endTime := time.Now().Add(time.Duration(10 * time.Second))
+	for {
+		fmt.Println("hello, now is %v", time.Now())
+		time.Sleep(time.Second)
+		if time.Now().After(endTime) {
+			break
+		}
+	}
+	fmt.Println("echo stop")
+}
+*/
 func (container *Container) startPty() error {
 	stdout_master, stdout_slave, err := pty.Open()
 	if err != nil {
@@ -500,7 +542,7 @@ func (container *Container) Changes() ([]Change, error) {
 	return image.Changes(container.rwPath())
 }
 
-// @anxk: 获取容器对应的镜像（json）。
+// @anxk: 获取容器对应的镜像（json）。runtime一边和容器交互另一边和镜像交互。
 func (container *Container) GetImage() (*Image, error) {
 	if container.runtime == nil {
 		return nil, fmt.Errorf("Can't get image of unregistered container")
@@ -513,12 +555,12 @@ func (container *Container) Mounted() (bool, error) {
 	return Mounted(container.RootfsPath())
 }
 
-// @anxk: unmount容器根文件系统。
+// @anxk: 卸载容器根文件系统。
 func (container *Container) Unmount() error {
 	return Unmount(container.RootfsPath())
 }
 
-// @anxk: 容器log文件的路径，即/var/lib/docker/containers/<容器ID>/<容器ID-容器名.log>。
+// @anxk: 容器log文件的路径，即/var/lib/docker/containers/<容器ID>/<容器ID-stdout/stderr.log>。
 func (container *Container) logPath(name string) string {
 	return path.Join(container.root, fmt.Sprintf("%s-%s.log", container.Id, name))
 }

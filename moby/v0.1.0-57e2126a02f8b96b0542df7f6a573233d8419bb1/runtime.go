@@ -16,8 +16,7 @@ import (
 
 // @anxk: 运行时是docker服务的主体，包括了镜像存储后端、容器存储、镜像仓库和标签存储、认证信息、网络和容器列表。
 // root是运行时的根路径，即/var/lib/docker。
-// repository是容器的根路径，即/var/lib/docker/containers，其中每个文件夹的路径形式是
-// ./<容器ID>，他们是对于容器的根目录（挂载点）。
+// repository是容器的根路径，即/var/lib/docker/containers，其中每个文件夹的路径形式是./<容器ID>。
 // graph是镜像的存储后端，即/var/lib/docker/graph。
 // repositories是镜像标签和仓库的存储路径，即/var/lib/docker/repositories。
 type Runtime struct {
@@ -72,7 +71,7 @@ func (runtime *Runtime) Exists(id string) bool {
 	return runtime.Get(id) != nil
 }
 
-// @anxk: 某一容器的根目录（挂载点），即/var/lib/docker/containers/<容器ID>
+// @anxk: 某一容器的根（不是容器内根路径，容器内根路径会被挂载在<容器ID>/rootfs），即/var/lib/docker/containers/<容器ID>
 func (runtime *Runtime) containerRoot(id string) string {
 	return path.Join(runtime.repository, id)
 }
@@ -128,6 +127,7 @@ func (runtime *Runtime) Load(id string) (*Container, error) {
 	return container, nil
 }
 
+// Register向runtime注册，建立runtime与某一容器的连接，使可以通过runtime操作容器。
 // Register makes a container object usable by the runtime as <container.Id>
 func (runtime *Runtime) Register(container *Container) error {
 	if container.runtime != nil || runtime.Exists(container.Id) {

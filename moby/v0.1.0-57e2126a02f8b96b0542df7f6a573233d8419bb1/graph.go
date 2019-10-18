@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// @anxk: Graph表示的是一个镜像数据（json和layer）的存储后端，并提供相关的操作。
+// @anxk: Graph表示的是一个镜像（json和layer）的存储后端，并提供相关的操作。
 type Graph struct {
 	// @anxk: Root 在 runtime.go 中被设置为 "/var/lib/docker/graph"，是存放所有本地镜像（json和layer）的路径。
 	Root string
@@ -72,6 +72,7 @@ func (graph *Graph) Create(layerData Archive, container *Container, comment stri
 
 // @anxk: Register将镜像（json和layer）存储在本地文件系统上，通过两步（1）创建临时graph存放镜像（2）rename
 // 来避免竞争条件。最后设置镜像json的graph字段。
+// Register注册的意义在于，建立镜像与graph的联系，将graph放入Image对象中使通过镜像（json）就能操作其数据（json和layer）。
 func (graph *Graph) Register(layerData Archive, img *Image) error {
 	if err := ValidateId(img.Id); err != nil {
 		return err
@@ -164,7 +165,7 @@ func (graph *Graph) All() ([]*Image, error) {
 	return images, err
 }
 
-// @anxk: 遍历本地镜像，根据提供的handler函数对镜像（json）进行响应的操作。
+// @anxk: 遍历本地镜像，根据提供的handler函数对镜像（json）进行相应的操作。
 func (graph *Graph) WalkAll(handler func(*Image)) error {
 	files, err := ioutil.ReadDir(graph.Root)
 	if err != nil {

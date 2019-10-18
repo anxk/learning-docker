@@ -22,7 +22,8 @@ type Image struct {
 	Created         time.Time `json:"created"`
 	Container       string    `json:"container,omitempty"`
 	ContainerConfig Config    `json:"container_config,omitempty"`
-	graph           *Graph
+	// 在镜像中放*Graph的原因在于graph是存储后端，需要通过Image操作镜像的内容（json或layer）。
+	graph *Graph
 }
 
 // @anxk: 从本地文件系统读取某一镜像（json）数据，并检查对应的layer是否存在以及是否是文件夹。
@@ -253,7 +254,7 @@ func (img *Image) WalkHistory(handler func(*Image) error) (err error) {
 	return nil
 }
 
-// @anxk: 返回父镜像。
+// @anxk: 返回父镜像（json）。
 func (img *Image) GetParent() (*Image, error) {
 	if img.Parent == "" {
 		return nil, nil
