@@ -79,10 +79,12 @@ func (job *Job) Run() error {
 	return nil
 }
 
+// @anxk: 返回包含job名和参数的字符串。
 func (job *Job) CallString() string {
 	return fmt.Sprintf("%s(%s)", job.Name, strings.Join(job.Args, ", "))
 }
 
+// @anxk: 返回包含OK/ERR和job退出码的字符串，如果job还为结束则返回空字符串。
 func (job *Job) StatusString() string {
 	// If the job hasn't completed, status string is empty
 	if job.end.IsZero() {
@@ -102,14 +104,17 @@ func (job *Job) String() string {
 	return fmt.Sprintf("%s.%s%s", job.Eng, job.CallString(), job.StatusString())
 }
 
+// @anxk: 返回job的环境变量。
 func (job *Job) Env() *Env {
 	return job.env
 }
 
+// @anxk: 检测job的某个环境变量是否存在。
 func (job *Job) EnvExists(key string) (value bool) {
 	return job.env.Exists(key)
 }
 
+// @anxk: 获取job的某个环境变量。
 func (job *Job) Getenv(key string) (value string) {
 	return job.env.Get(key)
 }

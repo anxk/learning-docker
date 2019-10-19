@@ -3,15 +3,16 @@ package image
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dotcloud/docker/archive"
-	"github.com/dotcloud/docker/runconfig"
-	"github.com/dotcloud/docker/runtime/graphdriver"
-	"github.com/dotcloud/docker/utils"
 	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
 	"time"
+
+	"github.com/dotcloud/docker/archive"
+	"github.com/dotcloud/docker/runconfig"
+	"github.com/dotcloud/docker/runtime/graphdriver"
+	"github.com/dotcloud/docker/utils"
 )
 
 type Image struct {
@@ -31,6 +32,8 @@ type Image struct {
 	graph Graph
 }
 
+// @anxk: 从本地加载镜像（json），附带从<镜像root>/layersize文件中读取并设置Size字段，
+// 注意这里并没有设置graph字段。
 func LoadImage(root string) (*Image, error) {
 	// Load the json data
 	jsonData, err := ioutil.ReadFile(jsonPath(root))
@@ -64,6 +67,7 @@ func LoadImage(root string) (*Image, error) {
 	return img, nil
 }
 
+// @anxk: 存储镜像，包含三个部分（1）存储layerData（2）layersize文件（3）镜像json。
 func StoreImage(img *Image, jsonData []byte, layerData archive.ArchiveReader, root, layer string) error {
 	// Store the layer
 	var (
@@ -133,10 +137,12 @@ func StoreImage(img *Image, jsonData []byte, layerData archive.ArchiveReader, ro
 	return nil
 }
 
+// @anxk: 设置镜像（json）的graph，这一操作即注册镜像。
 func (img *Image) SetGraph(graph Graph) {
 	img.graph = graph
 }
 
+// @anxk: 存储镜像Size字段到<镜像root>/layersize文件中。
 // SaveSize stores the current `size` value of `img` in the directory `root`.
 func (img *Image) SaveSize(root string) error {
 	if err := ioutil.WriteFile(path.Join(root, "layersize"), []byte(strconv.Itoa(int(img.Size))), 0600); err != nil {
@@ -145,10 +151,12 @@ func (img *Image) SaveSize(root string) error {
 	return nil
 }
 
+// @anxk: 镜像（json）的存储路径。
 func jsonPath(root string) string {
 	return path.Join(root, "json")
 }
 
+// @anxk: 获取镜像layer。
 // TarLayer returns a tar archive of the image's filesystem layer.
 func (img *Image) TarLayer() (arch archive.Archive, err error) {
 	if img.graph == nil {
@@ -205,6 +213,7 @@ func (img *Image) TarLayer() (arch archive.Archive, err error) {
 // Image includes convenience proxy functions to its graph
 // These functions will return an error if the image is not registered
 // (ie. if image.graph == nil)
+// @anxk: 获取镜像及其父镜像的列表。
 func (img *Image) History() ([]*Image, error) {
 	var parents []*Image
 	if err := img.WalkHistory(
@@ -218,6 +227,7 @@ func (img *Image) History() ([]*Image, error) {
 	return parents, nil
 }
 
+// @anxk: 遍历镜像及其父镜像，并执行相应的handler函数。
 func (img *Image) WalkHistory(handler func(*Image) error) (err error) {
 	currentImg := img
 	for currentImg != nil {
@@ -234,6 +244,7 @@ func (img *Image) WalkHistory(handler func(*Image) error) (err error) {
 	return nil
 }
 
+// @anxk: 获取直接父镜像（json）
 func (img *Image) GetParent() (*Image, error) {
 	if img.Parent == "" {
 		return nil, nil
@@ -244,6 +255,7 @@ func (img *Image) GetParent() (*Image, error) {
 	return img.graph.Get(img.Parent)
 }
 
+// @anxk: 获取镜像的根路径。
 func (img *Image) root() (string, error) {
 	if img.graph == nil {
 		return "", fmt.Errorf("Can't lookup root of unregistered image")
@@ -251,6 +263,7 @@ func (img *Image) root() (string, error) {
 	return img.graph.ImageRoot(img.ID), nil
 }
 
+// @anxk: 获取所有父镜像中Size字段的和，这是一个递归函数。
 func (img *Image) GetParentsSize(size int64) int64 {
 	parentImage, err := img.GetParent()
 	if err != nil || parentImage == nil {
@@ -260,6 +273,7 @@ func (img *Image) GetParentsSize(size int64) int64 {
 	return parentImage.GetParentsSize(size)
 }
 
+// @anxk: 获取连同自身和所有父镜像的总个数。如果获取父镜像过程中出错，返回-1, err。
 // Depth returns the number of parents for a
 // current image
 func (img *Image) Depth() (int, error) {
@@ -279,6 +293,7 @@ func (img *Image) Depth() (int, error) {
 	return count, nil
 }
 
+// @anxk: 从[]byte创建一个镜像（json）。
 // Build an Image object from raw json data
 func NewImgJSON(src []byte) (*Image, error) {
 	ret := &Image{}

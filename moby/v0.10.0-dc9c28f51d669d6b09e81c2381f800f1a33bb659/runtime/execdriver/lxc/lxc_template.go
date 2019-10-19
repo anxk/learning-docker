@@ -1,10 +1,11 @@
 package lxc
 
 import (
-	"github.com/dotcloud/docker/pkg/label"
-	"github.com/dotcloud/docker/runtime/execdriver"
 	"strings"
 	"text/template"
+
+	"github.com/dotcloud/docker/pkg/label"
+	"github.com/dotcloud/docker/runtime/execdriver"
 )
 
 const LxcTemplate = `
@@ -142,6 +143,7 @@ func escapeFstabSpaces(field string) string {
 	return strings.Replace(field, " ", "\\040", -1)
 }
 
+// @anxk: 默认swap是memory的两倍。
 func getMemorySwap(v *execdriver.Resources) int64 {
 	// By default, MemorySwap is set to twice the size of RAM.
 	// If you want to omit MemorySwap, set it to `-1'.
@@ -162,6 +164,7 @@ func getLabel(c map[string][]string, name string) string {
 	return ""
 }
 
+// @anxk: 模板编译。
 func init() {
 	var err error
 	funcMap := template.FuncMap{

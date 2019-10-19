@@ -2,13 +2,15 @@ package execdrivers
 
 import (
 	"fmt"
+	"path"
+
 	"github.com/dotcloud/docker/pkg/sysinfo"
 	"github.com/dotcloud/docker/runtime/execdriver"
 	"github.com/dotcloud/docker/runtime/execdriver/lxc"
 	"github.com/dotcloud/docker/runtime/execdriver/native"
-	"path"
 )
 
+// @anxk: 当前0.10.0版本支持lxc和native两个exec驱动。
 func NewDriver(name, root, initPath string, sysInfo *sysinfo.SysInfo) (execdriver.Driver, error) {
 	switch name {
 	case "lxc":

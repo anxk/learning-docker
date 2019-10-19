@@ -3,17 +3,19 @@ package lxc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dotcloud/docker/pkg/netlink"
-	"github.com/dotcloud/docker/pkg/user"
-	"github.com/dotcloud/docker/runtime/execdriver"
-	"github.com/syndtr/gocapability/capability"
 	"io/ioutil"
 	"net"
 	"os"
 	"strings"
 	"syscall"
+
+	"github.com/dotcloud/docker/pkg/netlink"
+	"github.com/dotcloud/docker/pkg/user"
+	"github.com/dotcloud/docker/runtime/execdriver"
+	"github.com/syndtr/gocapability/capability"
 )
 
+// @axnk: 清空环境变量并设置新的环境变量。
 // Clear environment pollution introduced by lxc-start
 func setupEnv(args *execdriver.InitArgs) error {
 	// Get env
@@ -42,6 +44,7 @@ func setupEnv(args *execdriver.InitArgs) error {
 	return nil
 }
 
+// @anxk: 设置hostname。
 func setupHostname(args *execdriver.InitArgs) error {
 	hostname := getEnv(args, "HOSTNAME")
 	if hostname == "" {
@@ -50,6 +53,7 @@ func setupHostname(args *execdriver.InitArgs) error {
 	return setHostname(hostname)
 }
 
+// @anxk: 设置网络。
 // Setup networking
 func setupNetworking(args *execdriver.InitArgs) error {
 	if args.Ip != "" {
@@ -95,6 +99,7 @@ func setupNetworking(args *execdriver.InitArgs) error {
 	return nil
 }
 
+// @anxk: 设置当前路径。
 // Setup working directory
 func setupWorkingDirectory(args *execdriver.InitArgs) error {
 	if args.WorkDir == "" {
@@ -106,6 +111,7 @@ func setupWorkingDirectory(args *execdriver.InitArgs) error {
 	return nil
 }
 
+// 设置有效用户和有效用户组。
 // Takes care of dropping privileges to the desired user
 func changeUser(args *execdriver.InitArgs) error {
 	uid, gid, suppGids, err := user.GetUserGroupSupplementary(
@@ -129,6 +135,7 @@ func changeUser(args *execdriver.InitArgs) error {
 	return nil
 }
 
+// @axnk: 设置内核能力参数。
 func setupCapabilities(args *execdriver.InitArgs) error {
 	if args.Privileged {
 		return nil
@@ -164,6 +171,7 @@ func setupCapabilities(args *execdriver.InitArgs) error {
 	return nil
 }
 
+// @anxk: 获取某个环境变量。
 func getEnv(args *execdriver.InitArgs, key string) string {
 	for _, kv := range args.Env {
 		parts := strings.SplitN(kv, "=", 2)

@@ -11,11 +11,13 @@ var (
 	ErrCannotParse = errors.New("cannot parse raw input")
 )
 
+// @anxk: 表示从lxc-info解析后的lxc容器的信息。
 type lxcInfo struct {
 	Running bool
 	Pid     int
 }
 
+// @anxk: 解析lxc-info输出的信息。
 func parseLxcInfo(raw string) (*lxcInfo, error) {
 	if raw == "" {
 		return nil, ErrCannotParse

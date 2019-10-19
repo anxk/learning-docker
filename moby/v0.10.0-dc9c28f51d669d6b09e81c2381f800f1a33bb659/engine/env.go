@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// @anxk: Env用来表示job的环境变量列表。
 type Env []string
 
 func (env *Env) Get(key string) (value string) {

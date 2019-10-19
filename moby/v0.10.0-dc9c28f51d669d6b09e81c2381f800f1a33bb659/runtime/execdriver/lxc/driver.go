@@ -2,10 +2,6 @@ package lxc
 
 import (
 	"fmt"
-	"github.com/dotcloud/docker/pkg/cgroups"
-	"github.com/dotcloud/docker/pkg/label"
-	"github.com/dotcloud/docker/runtime/execdriver"
-	"github.com/dotcloud/docker/utils"
 	"io/ioutil"
 	"log"
 	"os"
@@ -16,8 +12,14 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/dotcloud/docker/pkg/cgroups"
+	"github.com/dotcloud/docker/pkg/label"
+	"github.com/dotcloud/docker/runtime/execdriver"
+	"github.com/dotcloud/docker/utils"
 )
 
+// @anxk: lxc驱动名。
 const DriverName = "lxc"
 
 func init() {
@@ -58,12 +60,14 @@ func init() {
 	})
 }
 
+// @anxk: 表示一个lxc driver。
 type driver struct {
 	root       string // root path for the driver to use
 	apparmor   bool
 	sharedRoot bool
 }
 
+// @anxk: 创建一个lxc driver。
 func NewDriver(root string, apparmor bool) (*driver, error) {
 	// setup unconfined symlink
 	if err := linkLxcStart(root); err != nil {
@@ -76,11 +80,13 @@ func NewDriver(root string, apparmor bool) (*driver, error) {
 	}, nil
 }
 
+// @anxk: 返回类似lxc-<lxc的版本>的字符串。
 func (d *driver) Name() string {
 	version := d.version()
 	return fmt.Sprintf("%s-%s", DriverName, version)
 }
 
+// @anxk: 启动一个lxc容器，并返回退出码。
 func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallback execdriver.StartCallback) (int, error) {
 	if err := execdriver.SetTerminal(c, pipes); err != nil {
 		return -1, err
@@ -191,6 +197,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	return getExitCode(c), waitErr
 }
 
+// @anxk: 返回Command的返回码，如果还未结束则返回-1。
 /// Return the exit code of the process
 // if the process has not exited -1 will be returned
 func getExitCode(c *execdriver.Command) int {
@@ -200,14 +207,17 @@ func getExitCode(c *execdriver.Command) int {
 	return c.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 }
 
+// @anxk: 向容器发送指定信号。
 func (d *driver) Kill(c *execdriver.Command, sig int) error {
 	return KillLxc(c.ID, sig)
 }
 
+// @anxk: 使用SIGKILL(09)向容器发送信号。
 func (d *driver) Terminate(c *execdriver.Command) error {
 	return KillLxc(c.ID, 9)
 }
 
+// @anxk: 获取lxc版本，从lxc-version或者lxc-start --version得到。
 func (d *driver) version() string {
 	var (
 		version string
@@ -228,6 +238,7 @@ func (d *driver) version() string {
 	return version
 }
 
+// @anxk: 先后尝试用lxc-kill和lxc-stop向容器发送信号。
 func KillLxc(id string, sig int) error {
 	var (
 		err    error
@@ -282,15 +293,18 @@ func (d *driver) waitForStart(c *execdriver.Command, waitLock chan struct{}) (in
 	return -1, execdriver.ErrNotRunning
 }
 
+// @anxk: 获取指定lxc容器的状态等信息。
 func (d *driver) getInfo(id string) ([]byte, error) {
 	return exec.Command("lxc-info", "-n", id).CombinedOutput()
 }
 
+// @anxk: info用来表示容器的当前状态。
 type info struct {
 	ID     string
 	driver *driver
 }
 
+// @anxk: 获取容器当前状态。
 func (i *info) IsRunning() bool {
 	var running bool
 
@@ -305,6 +319,7 @@ func (i *info) IsRunning() bool {
 	return running
 }
 
+// @anxk: 实例化一个info。
 func (d *driver) Info(id string) execdriver.Info {
 	return &info{
 		ID:     id,
@@ -312,6 +327,7 @@ func (d *driver) Info(id string) execdriver.Info {
 	}
 }
 
+// @anxk: 获取lxc容器内的进程pid。
 func (d *driver) GetPidsForContainer(id string) ([]int, error) {
 	pids := []int{}
 
@@ -350,6 +366,7 @@ func (d *driver) GetPidsForContainer(id string) ([]int, error) {
 	return pids, nil
 }
 
+// @anxk: 创建符号链接lxc-start-unconfined，连接到本机lxc-start。
 func linkLxcStart(root string) error {
 	sourcePath, err := exec.LookPath("lxc-start")
 	if err != nil {
@@ -367,6 +384,7 @@ func linkLxcStart(root string) error {
 	return os.Symlink(sourcePath, targetPath)
 }
 
+// @anxk: 检测/是否为shared。
 // TODO: This can be moved to the mountinfo reader in the mount pkg
 func rootIsShared() bool {
 	if data, err := ioutil.ReadFile("/proc/self/mountinfo"); err == nil {
@@ -382,6 +400,7 @@ func rootIsShared() bool {
 	return true
 }
 
+// @anxk: 生成lxc配置文件。
 func (d *driver) generateLXCConfig(c *execdriver.Command) (string, error) {
 	var (
 		process, mount string

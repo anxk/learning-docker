@@ -2,21 +2,25 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/dotcloud/docker/utils"
 	"sync"
 	"time"
+
+	"github.com/dotcloud/docker/utils"
 )
 
+// @anxk: State用来表示容器生命过程中的状态信息，是容器中进程状态在容器层面的体现。作为容器
+// 运行时的docker，它的操作单元是容器，所以State是必需的。
 type State struct {
-	sync.RWMutex
-	Running    bool
-	Pid        int
-	ExitCode   int
-	StartedAt  time.Time
-	FinishedAt time.Time
-	Ghost      bool
+	sync.RWMutex // @anxk: 嵌入sync.RWMutex来避免出现竞争条件。
+	Running      bool
+	Pid          int
+	ExitCode     int
+	StartedAt    time.Time
+	FinishedAt   time.Time
+	Ghost        bool // @ 在Running=true时Ghost可为真或假。
 }
 
+// @anxk: 提供State的字符串表示。
 // String returns a human-readable description of the state
 func (s *State) String() string {
 	s.RLock()
@@ -28,7 +32,7 @@ func (s *State) String() string {
 		}
 		return fmt.Sprintf("Up %s", utils.HumanDuration(time.Now().UTC().Sub(s.StartedAt)))
 	}
-	if s.FinishedAt.IsZero() {
+	if s.FinishedAt.IsZero() { // @anxk: 这个状态表示容器还没有被设置为运行状态。
 		return ""
 	}
 	return fmt.Sprintf("Exited (%d) %s ago", s.ExitCode, utils.HumanDuration(time.Now().UTC().Sub(s.FinishedAt)))

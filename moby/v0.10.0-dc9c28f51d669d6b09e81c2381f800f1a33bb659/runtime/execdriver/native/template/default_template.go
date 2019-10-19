@@ -5,6 +5,7 @@ import (
 	"github.com/dotcloud/docker/pkg/libcontainer"
 )
 
+// @anxk: 设置容器的默认libcontainer配置。
 // New returns the docker default configuration for libcontainer
 func New() *libcontainer.Container {
 	container := &libcontainer.Container{
