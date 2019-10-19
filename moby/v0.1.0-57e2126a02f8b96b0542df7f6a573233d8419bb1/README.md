@@ -7,7 +7,7 @@ Docker is a great building block for automating distributed systems: large-scale
 
 <img src="http://bricks.argz.com/bricksfiles/lego/07000/7823/012.jpg"/>
 
-* *Heterogeneous payloads*: any combination of binaries, libraries, configuration files, scripts, virtualenvs, jars, gems, tarballs, you name it. No more juggling between domain-specific tools. Docker can deploy and run them all.
+* *Heterogeneous payloads（多种多样的负载）*: any combination of binaries, libraries, configuration files, scripts, virtualenvs, jars, gems, tarballs, you name it. No more juggling（兼顾） between domain-specific tools. Docker can deploy and run them all.
 
 * *Any server*: docker can run on any x64 machine with a modern linux kernel - whether it's a laptop, a bare metal server or a VM. This makes it perfect for multi-cloud deployments.
 
@@ -31,11 +31,11 @@ Notable features
 
 * Change management: changes to a container's filesystem can be committed into a new image and re-used to create more containers. No templating or manual configuration required.
 
-* Interactive shell: docker can allocate a pseudo-tty and attach to the standard input of any container, for example to run a throwaway interactive shell.
+* Interactive shell: docker can allocate a pseudo-tty and attach to the standard input of any container, for example to run a throwaway（一次性的） interactive shell.
 
 
 
-Under the hood
+Under the hood（面罩）
 --------------
 
 Under the hood, Docker is built on the following components:
@@ -76,7 +76,7 @@ Installing on Ubuntu 12.04 and 12.10
 
     ```bash
     cd docker-master
-    sudo ./docker run -i -t base /bin/bash
+    sudo ./docker run -i -t base /bin/bash（这里还并没有运行服务端，意味着当本地无服务端时，会自动把服务端拉起来）
     ```
 
     Consider adding docker to your `PATH` for simplicity.
@@ -256,7 +256,7 @@ What is a Standard Container?
 Docker defines a unit of software delivery called a Standard Container. The goal of a Standard Container is to encapsulate a software component and all its dependencies in
 a format that is self-describing and portable, so that any compliant runtime can run it without extra dependencies, regardless of the underlying machine and the contents of the container.
 
-The spec for Standard Containers is currently a work in progress, but it is very straightforward. It mostly defines 1) an image format, 2) a set of standard operations, and 3) an execution environment.
+** The spec for Standard Containers is currently a work in progress, but it is very straightforward. It mostly defines 1) an image format, 2) a set of standard operations, and 3) an execution environment. **
 
 A great analogy for this is the shipping container. Just like Standard Containers are a fundamental unit of software delivery, shipping containers (http://bricks.argz.com/ins/7823-1/12) are a fundamental unit of physical delivery.
 

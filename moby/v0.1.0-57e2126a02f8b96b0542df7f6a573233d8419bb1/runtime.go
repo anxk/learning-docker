@@ -286,7 +286,7 @@ func NewRuntimeFromDirectory(root string) (*Runtime, error) {
 	return runtime, nil
 }
 
-// @anxk: History是一个容器列表，表示本地启动过的容器。其实现了sort.Interface的方法Len、
+// @anxk: History是一个容器列表，其实现了sort.Interface的方法Len、
 // Less、Swap，以便对其根据启动时间进行排序。
 type History []*Container
 
