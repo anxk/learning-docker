@@ -1,12 +1,11 @@
 # docker related websites
 
-http://www.docker.org.cn/book/docker/what-is-docker-16.html
+
 https://www.gitbook.com/book/yeasy/docker_practice/details
-https://blog.lab99.org/post/docker-2016-07-14-faq.html
+
 https://stackoverflow.com/search?q=docker
 https://github.com/jpetazzo/dind
-http://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/
 https://hub.daocloud.io/
-http://www.docker.org.cn/docker/133.html
+
 https://www.opencontainers.org/
 https://github.com/opencontainers
