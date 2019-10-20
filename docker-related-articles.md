@@ -10,3 +10,5 @@
 5. https://legacy.gitbook.com/book/yeasy/docker_practice/details （Docker —— 从入门到实践）
 6. https://github.com/xianlubird/mydocker （自己动手写Docker）
 7. https://github.com/wsargent/docker-cheat-sheet （Docker Cheat Sheet）
+8. https://www.kernel.org/doc/Documentation/cgroup-v2.txt （cgroup-v2）
+9. https://www.kernel.org/doc/Documentation/cgroup-v1/ （cgroup-v1）
