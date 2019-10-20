@@ -7,3 +7,6 @@
 2. https://blog.lab99.org/post/docker-2016-07-14-faq.html （Docker 问答录（100 问））
 3. http://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/ （Using Docker-in-Docker for your CI or testing environment? Think twice.）
 4. http://www.docker.org.cn/docker/133.html （你应该知道的 5 个 Docker 工具）
+5. https://legacy.gitbook.com/book/yeasy/docker_practice/details （Docker —— 从入门到实践）
+6. https://github.com/xianlubird/mydocker （自己动手写Docker）
+7. https://github.com/wsargent/docker-cheat-sheet （Docker Cheat Sheet）
