@@ -7,5 +7,5 @@
 3. https://github.com/opencontainers/go-digest
 4. https://github.com/sirupsen/logrus
 5. https://github.com/hashicorp/go-memdb
-6. https://github.com/jpetazzo/dind （Docker In Docker）
+6. https://github.com/jpetazzo/dind （Docker in Docker）
 7. https://github.com/opencontainers （Open Container Initiative）
