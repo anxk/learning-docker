@@ -1,5 +1,0 @@
-base:
-  '*':
-    - mine
-    - common
-    - privilege
