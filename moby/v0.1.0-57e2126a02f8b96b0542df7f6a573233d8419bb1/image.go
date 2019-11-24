@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// @anxk: Image即镜像的json表示，包括镜像ID、父镜像、注解、创建时间、创建该镜像的容器ID和容器json、镜像的后端存储。
+// @anxk: Image即镜像的json表示，包括镜像ID、父镜像ID、注解、创建时间、创建该镜像的容器ID和容器json、镜像的后端存储。
 type Image struct {
 	Id              string    `json:"id"`
 	Parent          string    `json:"parent,omitempty"`
@@ -26,7 +26,7 @@ type Image struct {
 	graph *Graph
 }
 
-// @anxk: 从本地文件系统读取某一镜像（json）数据，并检查对应的layer是否存在以及是否是文件夹。
+// @anxk: 从本地文件系统读取某一镜像的（json）数据，并检查对应的layer是否存在以及是否是文件夹。
 func LoadImage(root string) (*Image, error) {
 	// Load the json data
 	jsonData, err := ioutil.ReadFile(jsonPath(root))
@@ -54,7 +54,7 @@ func LoadImage(root string) (*Image, error) {
 }
 
 // @anxk: 存储一个镜像（json和layer）在graph的对应位置，注意layer tarball是直接解压后
-// 放进/var/lib/docker/<镜像ID>/layer/文件夹下的。
+// 放进/var/lib/docker/graph/<镜像ID>/layer/文件夹下的。
 func StoreImage(img *Image, layerData Archive, root string) error {
 	// Check that root doesn't already exist
 	if _, err := os.Stat(root); err == nil {
@@ -81,12 +81,12 @@ func StoreImage(img *Image, layerData Archive, root string) error {
 	return nil
 }
 
-// @anxk: 存放镜像（layer）的文件夹，路径即/var/lib/docker/<镜像ID>/layer。
+// @anxk: 存放镜像（layer）的文件夹，路径是/var/lib/docker/graph/<镜像ID>/layer。
 func layerPath(root string) string {
 	return path.Join(root, "layer")
 }
 
-// @anxk: 存放镜像（json）的文件路径，注意这个文件是一个regular文件，路径是/var/lib/docker/<镜像ID>/json。
+// @anxk: 存放镜像（json）的文件路径，注意这个文件是一个regular文件，路径是/var/lib/docker/graph/<镜像ID>/json。
 func jsonPath(root string) string {
 	return path.Join(root, "json")
 }

@@ -112,7 +112,7 @@ func (runtime *Runtime) Create(config *Config) (*Container, error) {
 	return container, nil
 }
 
-// @anxk: 从本地加载一个容器并注册到运行时。
+// @anxk: 从本地加载一个容器（注册到运行时）。
 func (runtime *Runtime) Load(id string) (*Container, error) {
 	container := &Container{root: runtime.containerRoot(id)}
 	if err := container.FromDisk(); err != nil {
@@ -222,6 +222,7 @@ func (runtime *Runtime) Commit(id, repository, tag string) (*Image, error) {
 	return img, nil
 }
 
+// @anxk: 在docker运行时创建过程中用于加载容器，如果某个容器加载失败则会忽略。
 func (runtime *Runtime) restore() error {
 	dir, err := ioutil.ReadDir(runtime.repository)
 	if err != nil {
@@ -239,12 +240,12 @@ func (runtime *Runtime) restore() error {
 	return nil
 }
 
-// @anxk: 创建一个运行时。
+// @anxk: 创建一个docker运行时。
 func NewRuntime() (*Runtime, error) {
 	return NewRuntimeFromDirectory("/var/lib/docker")
 }
 
-// @anxk: 基于本地创建一个运行时。
+// @anxk: 基于本地文件系统创建一个运行时。
 func NewRuntimeFromDirectory(root string) (*Runtime, error) {
 	runtime_repo := path.Join(root, "containers")
 

@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-// @anxk: 初始化容器内的网络配置，即设置默认路由（网关）。
+// @anxk: 设置容器内的默认网关。
 // Setup networking
 func setupNetworking(gw string) {
 	if gw == "" {
@@ -23,7 +23,7 @@ func setupNetworking(gw string) {
 	}
 }
 
-// @axnk: 设置有效用户ID和有效组ID。
+// @axnk: 在容器中切换用户和组。
 // Takes care of dropping privileges to the desired user
 func changeUser(u string) {
 	if u == "" {
@@ -54,7 +54,7 @@ func changeUser(u string) {
 	}
 }
 
-// @anxk: 执行用户程序。
+// @anxk: 在容器中执行程序。
 func executeProgram(name string, args []string) {
 	path, err := exec.LookPath(name)
 	if err != nil {
@@ -67,7 +67,7 @@ func executeProgram(name string, args []string) {
 	}
 }
 
-// @anxk: 这是容器中第一个运行的程序，先于用户程序执行。
+// @anxk: 建立环境并执行要在容器内运行的程序。
 // Sys Init code
 // This code is run INSIDE the container and is responsible for setting
 // up the environment before running the actual process

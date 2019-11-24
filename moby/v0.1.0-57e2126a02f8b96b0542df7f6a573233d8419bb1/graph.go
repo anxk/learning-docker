@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// @anxk: Graph表示的是一个镜像（json和layer）的存储后端，并提供相关的操作。
+// @anxk: Graph表示的是镜像（json和layer）的存储后端，并提供相关的操作。
 type Graph struct {
 	// @anxk: Root 在 runtime.go 中被设置为 "/var/lib/docker/graph"，是存放所有本地镜像（json和layer）的路径。
 	Root string
