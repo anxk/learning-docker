@@ -11,7 +11,10 @@ import (
 	"github.com/dotcloud/docker/term"
 )
 
-// @anxk: docker的main函数，根据参数选择运行daeman或者client。
+// @anxk: main函数，根据条件选择运行服务端、客户端或者容器内的进程。因为在lxc配置文件中
+// 将docker二进制文件挂在了容器内/sbin/init路径，所以此处/sbin/init就是docker二进制文件，
+// 容器外名字叫docker，容器内名字叫/sbin/init。
+
 func main() {
 	if docker.SelfPath() == "/sbin/init" {
 		// Running in init mode
@@ -38,8 +41,7 @@ func main() {
 	}
 }
 
-// @anxk: 启动Daemon，包括实例化Server（包括Runtime的实例化），将server绑定到本地环回
-// 地址，监听tcp/4242端口并准备接受来自Client的请求。
+// @anxk: 启动服务端。
 func daemon() error {
 	service, err := docker.NewServer()
 	if err != nil {

@@ -258,6 +258,7 @@ func (container *Container) start() error {
 
 // @anxk: 准备资源，使用lxc-start启动容器，然后修改容器状态并持久化容器json到存储，最后
 // 开启新的go程用于等待容器退出即退出后的一些列操作。
+//（可参考lxc-start文档，http://man7.org/linux/man-pages/man1/lxc-start.1.html
 func (container *Container) Start() error {
 	if err := container.EnsureMounted(); err != nil {
 		return err
