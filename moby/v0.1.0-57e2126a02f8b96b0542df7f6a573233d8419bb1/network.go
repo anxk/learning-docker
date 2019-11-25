@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// anxk: docker默认网桥名字和使用的主机端口范围。
 const (
 	networkBridgeIface = "lxcbr0"
 	portRangeStart     = 49153
@@ -66,6 +67,7 @@ func networkSize(mask net.IPMask) (int32, error) {
 	return n + 1, nil
 }
 
+// @anxk: 主机和容器间的端口映射通过iptables实现。
 // Wrapper around the iptables command
 func iptables(args ...string) error {
 	if err := exec.Command("/sbin/iptables", args...).Run(); err != nil {
@@ -74,6 +76,7 @@ func iptables(args ...string) error {
 	return nil
 }
 
+// @anxk: 获取网络接口的ipv4地址，如果有多个地址，选择第一个。
 // Return the IPv4 address of a network interface
 func getIfaceAddr(name string) (net.Addr, error) {
 	iface, err := net.InterfaceByName(name)
@@ -101,6 +104,7 @@ func getIfaceAddr(name string) (net.Addr, error) {
 	return addrs4[0], nil
 }
 
+// @anxk: 管理端口映射，存储端口映射关系。
 // Port mapper takes care of mapping external ports to containers by setting
 // up iptables rules.
 // It keeps track of all mappings and is able to unmap at will
@@ -108,6 +112,7 @@ type PortMapper struct {
 	mapping map[int]net.TCPAddr
 }
 
+// @anxk: 删除nat表的PREROUTING、OUTPUT链中DOCKER规则，清空DOCKER链中的规则，删除DOCKER自定义链。
 func (mapper *PortMapper) cleanup() error {
 	// Ignore errors - This could mean the chains were never set up
 	iptables("-t", "nat", "-D", "PREROUTING", "-j", "DOCKER")
@@ -118,24 +123,30 @@ func (mapper *PortMapper) cleanup() error {
 	return nil
 }
 
+// @anxk: 建立DOCKER相关的iptables规则。
 func (mapper *PortMapper) setup() error {
+	// @anxk: 在nat表中新建自定义链DOCKER。
 	if err := iptables("-t", "nat", "-N", "DOCKER"); err != nil {
 		return errors.New("Unable to setup port networking: Failed to create DOCKER chain")
 	}
+	// @anxk: 在nat表的PREROUTING链追加规则DOCKER。
 	if err := iptables("-t", "nat", "-A", "PREROUTING", "-j", "DOCKER"); err != nil {
 		return errors.New("Unable to setup port networking: Failed to inject docker in PREROUTING chain")
 	}
+	// @anxk: 在nat表的OUTPUT链中追加规则DOCKER。
 	if err := iptables("-t", "nat", "-A", "OUTPUT", "-j", "DOCKER"); err != nil {
 		return errors.New("Unable to setup port networking: Failed to inject docker in OUTPUT chain")
 	}
 	return nil
 }
 
+// @anxk: 使用规则前插入或追加给DOCKER链添加TCP类型的NAT规则。
 func (mapper *PortMapper) iptablesForward(rule string, port int, dest net.TCPAddr) error {
 	return iptables("-t", "nat", rule, "DOCKER", "-p", "tcp", "--dport", strconv.Itoa(port),
 		"-j", "DNAT", "--to-destination", net.JoinHostPort(dest.IP.String(), strconv.Itoa(dest.Port)))
 }
 
+// @anxk: 在DOCKER链中追加规则，将发往主机目的端口为port的tcp包转发到相应的TCP endpoint。
 func (mapper *PortMapper) Map(port int, dest net.TCPAddr) error {
 	if err := mapper.iptablesForward("-A", port, dest); err != nil {
 		return err
@@ -144,6 +155,7 @@ func (mapper *PortMapper) Map(port int, dest net.TCPAddr) error {
 	return nil
 }
 
+// @anxk: 根据主机端口删除指定的端口映射规则。
 func (mapper *PortMapper) Unmap(port int) error {
 	dest, ok := mapper.mapping[port]
 	if !ok {
@@ -167,11 +179,13 @@ func newPortMapper() (*PortMapper, error) {
 	return mapper, nil
 }
 
+// @anxk: 相当于一个端口池子，使用通道来保存端口。
 // Port allocator: Atomatically allocate and release networking ports
 type PortAllocator struct {
 	ports chan (int)
 }
 
+// @anxk: 向端口池里面存放端口。
 func (alloc *PortAllocator) populate(start, end int) {
 	alloc.ports = make(chan int, end-start)
 	for port := start; port < end; port++ {
@@ -179,6 +193,7 @@ func (alloc *PortAllocator) populate(start, end int) {
 	}
 }
 
+// @anxk: 从端口池中取出一个端口。
 func (alloc *PortAllocator) Acquire() (int, error) {
 	select {
 	case port := <-alloc.ports:
@@ -189,6 +204,7 @@ func (alloc *PortAllocator) Acquire() (int, error) {
 	return -1, nil
 }
 
+// @anxk: 释放、返还端口给端口池。
 func (alloc *PortAllocator) Release(port int) error {
 	select {
 	case alloc.ports <- port:
@@ -205,12 +221,14 @@ func newPortAllocator(start, end int) (*PortAllocator, error) {
 	return allocator, nil
 }
 
+// @anxk: IP地址池。
 // IP allocator: Atomatically allocate and release networking ports
 type IPAllocator struct {
 	network *net.IPNet
 	queue   chan (net.IP)
 }
 
+// @anxk: 根据对应网络地址向IP池中存放IP地址。
 func (alloc *IPAllocator) populate() error {
 	firstIP, _ := networkRange(alloc.network)
 	size, err := networkSize(alloc.network.Mask)
@@ -239,6 +257,7 @@ func (alloc *IPAllocator) populate() error {
 	return nil
 }
 
+// @anxk: 从IP池中获取一个IP。
 func (alloc *IPAllocator) Acquire() (net.IP, error) {
 	select {
 	case ip := <-alloc.queue:
@@ -249,6 +268,7 @@ func (alloc *IPAllocator) Acquire() (net.IP, error) {
 	return net.IP{}, nil
 }
 
+// @anxk: 释放一个IP。
 func (alloc *IPAllocator) Release(ip net.IP) error {
 	select {
 	case alloc.queue <- ip:
@@ -269,6 +289,7 @@ func newIPAllocator(network *net.IPNet) (*IPAllocator, error) {
 	return alloc, nil
 }
 
+// @anxk: 表示容器中的网络栈。
 // Network interface represents the networking stack of a container
 type NetworkInterface struct {
 	IPNet   net.IPNet
@@ -278,6 +299,7 @@ type NetworkInterface struct {
 	extPorts []int
 }
 
+// @anxk: 获取一个主机端口并映射进容器。
 // Allocate an external TCP port and map it to the interface
 func (iface *NetworkInterface) AllocatePort(port int) (int, error) {
 	extPort, err := iface.manager.portAllocator.Acquire()
@@ -292,20 +314,25 @@ func (iface *NetworkInterface) AllocatePort(port int) (int, error) {
 	return extPort, nil
 }
 
+// @anxk: 释放容器的网络资源。
 // Release: Network cleanup - release all resources
 func (iface *NetworkInterface) Release() error {
 	for _, port := range iface.extPorts {
+		// @anxk: 删除对应得端口映射。
 		if err := iface.manager.portMapper.Unmap(port); err != nil {
 			log.Printf("Unable to unmap port %v: %v", port, err)
 		}
+		// @anxk: 释放对应的主机端口。
 		if err := iface.manager.portAllocator.Release(port); err != nil {
 			log.Printf("Unable to release port %v: %v", port, err)
 		}
 
 	}
+	// @anxk: 释放IP地址。
 	return iface.manager.ipAllocator.Release(iface.IPNet.IP)
 }
 
+// @anxk: 管理docker下辖的网络。
 // Network Manager manages a set of network interfaces
 // Only *one* manager per host machine should be used
 type NetworkManager struct {
@@ -317,6 +344,7 @@ type NetworkManager struct {
 	portMapper    *PortMapper
 }
 
+// @anxk: 分配一个网络栈。
 // Allocate a network interface
 func (manager *NetworkManager) Allocate() (*NetworkInterface, error) {
 	ip, err := manager.ipAllocator.Acquire()

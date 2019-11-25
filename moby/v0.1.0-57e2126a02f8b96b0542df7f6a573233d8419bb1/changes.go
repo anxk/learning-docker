@@ -33,6 +33,7 @@ func (change *Change) String() string {
 	return fmt.Sprintf("%s %s", kind, change.Path)
 }
 
+// @anxk: 计算层之间的差异。
 func Changes(layers []string, rw string) ([]Change, error) {
 	var changes []Change
 	err := filepath.Walk(rw, func(path string, f os.FileInfo, err error) error {
