@@ -17,6 +17,7 @@ func Self() string {
 // SysProcAttr.Pdeathsig to SIGTERM.
 // This will use the in-memory version (/proc/self/exe) of the current binary,
 // it is thus safe to delete or replace the on-disk binary (os.Args[0]).
+// @anxk: http://man7.org/linux/man-pages/man2/prctl.2.html
 func Command(args ...string) *exec.Cmd {
 	return &exec.Cmd{
 		Path: Self(),
