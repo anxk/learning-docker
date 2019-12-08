@@ -8,6 +8,7 @@ type StoreFilter func(*Container) bool
 // manipulate containers in the store
 type StoreReducer func(*Container)
 
+// @anxk: 定义容器存储的接口。
 // Store defines an interface that
 // any container store must implement.
 type Store interface {

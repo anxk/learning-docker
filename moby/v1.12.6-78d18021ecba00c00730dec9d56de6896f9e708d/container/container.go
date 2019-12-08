@@ -43,6 +43,8 @@ import (
 	"github.com/opencontainers/runc/libcontainer/label"
 )
 
+// @anxk: 容器的元数据存放在 /var/lib/docker/containers/<container-ID>/ 目录下，其中
+// config.v2.json 即为容器的配置文件。
 const configFileName = "config.v2.json"
 
 var (
@@ -109,6 +111,7 @@ func NewBaseContainer(id, root string) *Container {
 	}
 }
 
+// @anxk: 从磁盘上加载容器配置。
 // FromDisk loads the container configuration stored in the host.
 func (container *Container) FromDisk() error {
 	pth, err := container.ConfigPath()
@@ -135,6 +138,7 @@ func (container *Container) FromDisk() error {
 	return container.readHostConfig()
 }
 
+// @anxk: 将容器配置持久化到磁盘上。
 // ToDisk saves the container configuration on disk.
 func (container *Container) ToDisk() error {
 	pth, err := container.ConfigPath()
@@ -158,6 +162,7 @@ func (container *Container) ToDisk() error {
 	return container.WriteHostConfig()
 }
 
+// @anxk: 以线程安全的方式（加锁）将容器配置持久化到磁盘上。
 // ToDiskLocking saves the container configuration on disk in a thread safe way.
 func (container *Container) ToDiskLocking() error {
 	container.Lock()
@@ -166,6 +171,7 @@ func (container *Container) ToDiskLocking() error {
 	return err
 }
 
+// @anxk: 从本地磁盘加载容器的主机配置文件。
 // readHostConfig reads the host configuration from disk for the container.
 func (container *Container) readHostConfig() error {
 	container.HostConfig = &containertypes.HostConfig{}
@@ -195,6 +201,7 @@ func (container *Container) readHostConfig() error {
 	return nil
 }
 
+// @anxk: 将容器的主机配置存储到本地磁盘上。
 // WriteHostConfig saves the host configuration on disk for the container.
 func (container *Container) WriteHostConfig() error {
 	pth, err := container.HostConfigPath()
@@ -298,11 +305,13 @@ func (container *Container) ExitOnNext() {
 	}
 }
 
+// @anxk: 获取容器主机配置文件的路径。
 // HostConfigPath returns the path to the container's JSON hostconfig
 func (container *Container) HostConfigPath() (string, error) {
 	return container.GetRootResourcePath("hostconfig.json")
 }
 
+// @anxk: 获取容器配置文件路径。
 // ConfigPath returns the path to the container's JSON config
 func (container *Container) ConfigPath() (string, error) {
 	return container.GetRootResourcePath(configFileName)
@@ -562,6 +571,7 @@ func (container *Container) IsDestinationMounted(destination string) bool {
 	return container.MountPoints[destination] != nil
 }
 
+// @anxk: 返回用于停止容器的信号值。
 // StopSignal returns the signal used to stop the container.
 func (container *Container) StopSignal() int {
 	var stopSignal syscall.Signal
@@ -925,6 +935,7 @@ func (container *Container) UpdateMonitor(restartPolicy containertypes.RestartPo
 	}
 }
 
+// @anxk: 返回容器的主机名，如果域名不为空，则返回带域名的主机名。
 // FullHostname returns hostname and optional domain appended to it.
 func (container *Container) FullHostname() string {
 	fullHostname := container.Config.Hostname

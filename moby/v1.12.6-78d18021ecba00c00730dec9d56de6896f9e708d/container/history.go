@@ -2,6 +2,8 @@ package container
 
 import "sort"
 
+// @anxk: 实现了 sort.Interface 的容器数组，主要用于对容器基于创建时间进行排序。
+
 // History is a convenience type for storing a list of containers,
 // sorted by creation date in descendant order.
 type History []*Container
