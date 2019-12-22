@@ -1,12 +1,15 @@
 # Learning Docker
 
-## 快速导航
+## 目录
 
-* [docker 文档](https://docs.docker.com/)
-* [docker hub](https://hub.docker.com/)
-* [stackoverflow docker 主题](https://stackoverflow.com/search?q=docker)
-* [dockerone 社区](http://dockone.io/)
-* [docker 中文网](http://www.docker.org.cn/)
-* [daocloud](https://hub.daocloud.io/)
-* [oci](https://www.opencontainers.org/)
+* moby-v0.1.0
 
+    早期 moby 源码，用于研究早期 moby 的实现。
+
+* moby-v1.12.6
+
+    moby v1.12.6 源码，用于研究 moby v1.12.6 版本的实现。
+
+* tools
+
+    一些相关的工具。
